@@ -19,7 +19,7 @@ h1{font-size:2.2em;letter-spacing:.04em;margin:.2em 0}.sub{color:#b9a07a;margin-
 #stage{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;user-select:none}
 #stage img{max-width:100%;max-height:100%;object-fit:contain;box-shadow:0 0 30px #000}
 .zone{position:absolute;top:0;bottom:0;width:35%;cursor:pointer}.zl{left:0}.zr{right:0}
-#scroll{flex:1;overflow-y:auto;display:none}#scroll img{display:block;width:100%;max-width:1280px;margin:0 auto 6px}
+#scroll{display:none;padding-bottom:40px}#scroll img{display:block;width:100%;max-width:1280px;margin:0 auto 6px}
 #prog{height:3px;background:var(--sep);width:0;transition:width .2s}
 #end{display:none;position:absolute;inset:0;background:rgba(10,8,6,.92);flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
 #end button{background:var(--sep);color:#fff;border:0;border-radius:4px;padding:10px 18px;font:inherit;cursor:pointer}
@@ -54,14 +54,14 @@ const CH=[ // add a chapter: {t:"Chapter 3",n:12}
  {t:"Chapter 2",n:11},
 ];
 const src=(c,p)=>`img/ch${c+1}/p${String(p+1).padStart(2,'0')}.jpg`;
-let c=0,p=0,mode=localStorage.mode||'page';
+let c=0,p=0,mode=localStorage.mode2||'scroll';
 const $=id=>document.getElementById(id);
 $('list').innerHTML=CH.map((x,i)=>`<a class="ch" onclick="openCh(${i},0)"><img src="${src(i,0)}" loading="lazy"><div><b>${x.t}</b><small>${x.n} pages</small></div></a>`).join('');
 $('chSel').innerHTML=CH.map((x,i)=>`<option value="${i}">${x.t}</option>`).join('');
 const saved=JSON.parse(localStorage.pos||'null');
 if(saved){$('resumeBtn').style.display='inline-block';$('resumeBtn').textContent=`Continue ${CH[saved.c].t}, page ${saved.p+1}`;$('resumeBtn').onclick=()=>openCh(saved.c,saved.p);}
 function openCh(i,pg){c=i;p=pg;$('home').style.display='none';$('reader').style.display='flex';$('chSel').value=i;
- $('scroll').innerHTML=Array.from({length:CH[i].n},(_,k)=>`<img src="${src(i,k)}" loading="lazy" alt="Page ${k+1}">`).join('');
+ $('scroll').innerHTML=Array.from({length:CH[i].n},(_,k)=>`<img src="${src(i,k)}" loading="lazy" alt="Page ${k+1}">`).join('')+(i+1<CH.length?`<div style="text-align:center;margin:24px"><button onclick="openCh(${i+1},0)" style="background:#8a6a45;color:#fff;border:0;border-radius:4px;padding:12px 20px;font:inherit">Read ${CH[i+1].t} →</button></div>`:`<p style="text-align:center;color:#b9a07a">End of ${CH[i].t} · More chapters coming soon</p>`);
  applyMode();show();history.replaceState(null,'',`#c${i+1}p${pg+1}`);}
 function show(){$('end').style.display='none';$('pg').src=src(c,p);$('pageLbl').textContent=`Page ${p+1} / ${CH[c].n}`;
  $('prog').style.width=((p+1)/CH[c].n*100)+'%';localStorage.pos=JSON.stringify({c,p});history.replaceState(null,'',`#c${c+1}p${p+1}`);
@@ -73,14 +73,14 @@ function go(d){if($('end').style.display=='flex'){if(d<0){show();}return;}
   else{$('nextBtn').style.display='none';$('endTxt').textContent+=' · More chapters coming soon';}return;}
  p=np;show();}
 function home(){$('reader').style.display='none';$('home').style.display='block';history.replaceState(null,'',location.pathname);location.reload();}
-function applyMode(){const s=mode=='scroll';$('stage').style.display=s?'none':'flex';$('scroll').style.display=s?'block':'none';$('modeBtn').textContent=s?'Page by page':'Long scroll';
- if(s){const im=$('scroll').children[p];if(im)setTimeout(()=>im.scrollIntoView(),50);}}
-function toggleMode(){mode=mode=='page'?'scroll':'page';localStorage.mode=mode;applyMode();}
+function applyMode(){const s=mode=='scroll';const R=$('reader');R.style.position=s?'static':'fixed';R.style.minHeight=s?'100vh':'';$('bar').style.position=s?'sticky':'';$('bar').style.top='0';$('bar').style.zIndex='5';document.body.style.overflow=s?'auto':'hidden';$('stage').style.display=s?'none':'flex';$('scroll').style.display=s?'block':'none';$('modeBtn').textContent=s?'Page by page':'Long scroll';
+ if(s){const im=$('scroll').children[p];setTimeout(()=>{if(im&&p>0)im.scrollIntoView();else window.scrollTo(0,0);},80);}}
+function toggleMode(){mode=mode=='page'?'scroll':'page';localStorage.mode2=mode;applyMode();}
 function fs(){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}
 document.addEventListener('keydown',e=>{if($('reader').style.display!='flex'||mode=='scroll')return;
  if(['ArrowRight','d',' '].includes(e.key)){e.preventDefault();go(1);}if(['ArrowLeft','a'].includes(e.key))go(-1);if(e.key=='Escape')home();});
 let tx=null;$('stage').addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
 $('stage').addEventListener('touchend',e=>{if(tx==null)return;const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>50)go(dx<0?1:-1);tx=null;});
-$('scroll').addEventListener('scroll',()=>{const ims=[...$('scroll').children];const k=ims.findIndex(im=>im.getBoundingClientRect().bottom>innerHeight/2);if(k>=0&&k!=p){p=k;$('pageLbl').textContent=`Page ${p+1} / ${CH[c].n}`;$('prog').style.width=((p+1)/CH[c].n*100)+'%';localStorage.pos=JSON.stringify({c,p});}});
+window.addEventListener('scroll',()=>{if(mode!='scroll'||$('reader').style.display!='flex')return;const ims=[...$('scroll').querySelectorAll('img')];const k=ims.findIndex(im=>im.getBoundingClientRect().bottom>innerHeight/2);if(k>=0&&k!=p){p=k;$('pageLbl').textContent=`Page ${p+1} / ${CH[c].n}`;$('prog').style.width=((p+1)/CH[c].n*100)+'%';localStorage.pos=JSON.stringify({c,p});}});
 const m=location.hash.match(/c(\d+)p(\d+)/);if(m&&CH[m[1]-1])openCh(m[1]-1,Math.min(m[2]-1,CH[m[1]-1].n-1));
 </script></body></html>
