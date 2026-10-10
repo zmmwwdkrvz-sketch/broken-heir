@@ -29,7 +29,7 @@ h1{font-size:2.2em;letter-spacing:.04em;margin:.2em 0}.sub{color:#b9a07a;margin-
   <h1>Migawari <span style="font-size:.6em;color:#b9a07a">身代わり</span></h1>
   <div class="sub">The Takamori Heir · English edition</div>
   <img class="cover" src="img/ch1/p01.jpg" alt="Chapter 1 opening page">
-  <a class="resume" id="resumeBtn" style="display:none"></a>
+  <a class="resume" id="resumeBtn" style="display:none" href="#"></a>
   <div id="list"></div>
 </div>
 <div id="reader">
@@ -56,10 +56,10 @@ const CH=[ // add a chapter: {t:"Chapter 3",n:12}
 const src=(c,p)=>`img/ch${c+1}/p${String(p+1).padStart(2,'0')}.jpg`;
 let c=0,p=0,mode=localStorage.mode2||'scroll';
 const $=id=>document.getElementById(id);
-$('list').innerHTML=CH.map((x,i)=>`<a class="ch" onclick="openCh(${i},0)"><img src="${src(i,0)}" loading="lazy"><div><b>${x.t}</b><small>${x.n} pages</small></div></a>`).join('');
+$('list').innerHTML=CH.map((x,i)=>`<a class="ch" href="#c${i+1}p1"><img src="${src(i,0)}" loading="lazy"><div><b>${x.t}</b><small>${x.n} pages</small></div></a>`).join('');
 $('chSel').innerHTML=CH.map((x,i)=>`<option value="${i}">${x.t}</option>`).join('');
 const saved=JSON.parse(localStorage.pos||'null');
-if(saved){$('resumeBtn').style.display='inline-block';$('resumeBtn').textContent=`Continue ${CH[saved.c].t}, page ${saved.p+1}`;$('resumeBtn').onclick=()=>openCh(saved.c,saved.p);}
+if(saved){$('resumeBtn').style.display='inline-block';$('resumeBtn').textContent=`Continue ${CH[saved.c].t}, page ${saved.p+1}`;$('resumeBtn').href=`#c${saved.c+1}p${saved.p+1}`;}
 function openCh(i,pg){c=i;p=pg;$('home').style.display='none';$('reader').style.display='flex';$('chSel').value=i;
  $('scroll').innerHTML=Array.from({length:CH[i].n},(_,k)=>`<img src="${src(i,k)}" loading="lazy" alt="Page ${k+1}">`).join('')+(i+1<CH.length?`<div style="text-align:center;margin:24px"><button onclick="openCh(${i+1},0)" style="background:#8a6a45;color:#fff;border:0;border-radius:4px;padding:12px 20px;font:inherit">Read ${CH[i+1].t} →</button></div>`:`<p style="text-align:center;color:#b9a07a">End of ${CH[i].t} · More chapters coming soon</p>`);
  applyMode();show();history.replaceState(null,'',`#c${i+1}p${pg+1}`);}
@@ -82,5 +82,6 @@ document.addEventListener('keydown',e=>{if($('reader').style.display!='flex'||mo
 let tx=null;$('stage').addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
 $('stage').addEventListener('touchend',e=>{if(tx==null)return;const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>50)go(dx<0?1:-1);tx=null;});
 window.addEventListener('scroll',()=>{if(mode!='scroll'||$('reader').style.display!='flex')return;const ims=[...$('scroll').querySelectorAll('img')];const k=ims.findIndex(im=>im.getBoundingClientRect().bottom>innerHeight/2);if(k>=0&&k!=p){p=k;$('pageLbl').textContent=`Page ${p+1} / ${CH[c].n}`;$('prog').style.width=((p+1)/CH[c].n*100)+'%';localStorage.pos=JSON.stringify({c,p});}});
-const m=location.hash.match(/c(\d+)p(\d+)/);if(m&&CH[m[1]-1])openCh(m[1]-1,Math.min(m[2]-1,CH[m[1]-1].n-1));
+function route(){const m=location.hash.match(/c(\d+)p(\d+)/);if(m&&CH[m[1]-1]&&($('reader').style.display!='flex'||c!=m[1]-1))openCh(m[1]-1,Math.min(m[2]-1,CH[m[1]-1].n-1));}
+window.addEventListener('hashchange',route);route();
 </script></body></html>
