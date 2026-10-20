@@ -1,87 +1,545 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Migawari 身代わり</title>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#100e0c">
+<meta name="description" content="Read Migawari — The Takamori Heir.">
+<title>Migawari</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500&text=%E8%BA%AB%E4%BB%A3%E3%82%8F%E3%82%8A&display=swap" rel="stylesheet">
 <style>
-:root{--ink:#1b1510;--paper:#efe4cc;--sep:#8a6a45}
-*{box-sizing:border-box}html,body{margin:0;height:100%;background:#120e0a;color:var(--paper);font-family:Georgia,serif}
-a{color:inherit}
-#home{max-width:820px;margin:0 auto;padding:40px 20px}
-h1{font-size:2.2em;letter-spacing:.04em;margin:.2em 0}.sub{color:#b9a07a;margin-bottom:28px}
-.cover{width:100%;border:3px solid var(--sep);border-radius:4px;margin-bottom:24px}
-.ch{display:flex;gap:16px;align-items:center;background:#1e1813;border:1px solid #3a2e22;border-radius:6px;padding:12px;margin:10px 0;cursor:pointer;text-decoration:none}
-.ch:hover{border-color:var(--sep)}.ch img{width:160px;border-radius:3px}.ch b{font-size:1.2em}.ch small{display:block;color:#b9a07a;margin-top:4px}
-.resume{display:inline-block;background:var(--sep);color:#fff;padding:10px 18px;border-radius:4px;text-decoration:none;margin-bottom:18px;cursor:pointer}
-#reader{display:none;position:fixed;inset:0;flex-direction:column}
-#bar{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#1e1813;border-bottom:1px solid #3a2e22;font-size:14px;transition:opacity .3s}
-#bar button,#bar select{background:#2b221a;color:var(--paper);border:1px solid #4a3a2a;border-radius:4px;padding:6px 10px;font:inherit;cursor:pointer}
-#bar .sp{flex:1}
-#stage{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;user-select:none}
-#stage img{max-width:100%;max-height:100%;object-fit:contain;box-shadow:0 0 30px #000}
-.zone{position:absolute;top:0;bottom:0;width:35%;cursor:pointer}.zl{left:0}.zr{right:0}
-#scroll{display:none;padding-bottom:40px}#scroll img{display:block;width:100%;max-width:1280px;margin:0 auto 6px}
-#prog{height:3px;background:var(--sep);width:0;transition:width .2s}
-#end{display:none;position:absolute;inset:0;background:rgba(10,8,6,.92);flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
-#end button{background:var(--sep);color:#fff;border:0;border-radius:4px;padding:10px 18px;font:inherit;cursor:pointer}
-@media (max-width:600px){.ch img{width:110px}#bar{font-size:12px}#pageLbl{display:none}}
-</style></head><body>
-<div id="home">
-  <h1>Migawari <span style="font-size:.6em;color:#b9a07a">身代わり</span></h1>
-  <div class="sub">The Takamori Heir · English edition</div>
-  <img class="cover" src="img/ch1/p01.jpg" alt="Chapter 1 opening page">
-  <a class="resume" id="resumeBtn" style="display:none" href="#"></a>
-  <div id="list"></div>
-</div>
-<div id="reader">
-  <div id="bar">
-    <button onclick="home()">☰ Chapters</button>
-    <select id="chSel" onchange="openCh(+this.value,0)"></select>
-    <span id="pageLbl"></span><span class="sp"></span>
-    <button id="modeBtn" onclick="toggleMode()">Long scroll</button>
-    <button onclick="fs()">⛶</button>
-  </div>
-  <div id="prog"></div>
-  <div id="stage">
-    <img id="pg" alt="">
-    <div class="zone zl" onclick="go(-1)"></div><div class="zone zr" onclick="go(1)"></div>
-    <div id="end"><div id="endTxt"></div><button id="nextBtn"></button><button onclick="home()">Back to chapters</button></div>
-  </div>
-  <div id="scroll"></div>
-</div>
+:root {
+  --bg: #100e0c;
+  --surface: #1a1613;
+  --fg: #f3eadb;
+  --muted: #a89884;
+  --faint: #7a6e62;
+  --line: #3a322a;
+  --paper: #f3eadb;
+  --ink: #161310;
+  --display: "Cormorant Garamond", Palatino, "Hiragino Mincho ProN", serif;
+  --sans: Outfit, "Avenir Next", "Segoe UI", sans-serif;
+  --jp: "Noto Serif JP", "Hiragino Mincho ProN", serif;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); color: var(--fg); color-scheme: dark; -webkit-font-smoothing: antialiased; }
+body { margin: 0; min-height: 100dvh; background: var(--bg); color: var(--fg); font-family: var(--sans); }
+button, a { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: 0; }
+a { text-decoration: none; }
+img { max-width: 100%; }
+.safe-top { padding-top: max(12px, env(safe-area-inset-top)); }
+.safe-bottom { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+.shelf { max-width: 64rem; margin: 0 auto; padding: 24px 20px 64px; }
+.kicker { margin: 0; font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); }
+h1 { margin: 8px 0 0; font-family: var(--display); font-weight: 500; font-size: 3rem; line-height: 1; }
+.jp { margin: 12px 0 0; font-family: var(--jp); font-size: 1.125rem; color: var(--muted); }
+.lede { max-width: 24rem; margin: 16px 0 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+.grid { margin-top: 32px; display: grid; gap: 24px; }
+@media (min-width: 800px) { .grid { grid-template-columns: 1.35fr 1fr; align-items: start; } }
+.cover { display: block; overflow: hidden; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); }
+.cover img { display: block; width: 100%; aspect-ratio: 16/9; object-fit: cover; }
+.cover span { display: flex; justify-content: space-between; gap: 12px; padding: 12px 16px; }
+.cover b { font-family: var(--display); font-weight: 500; font-size: 1.25rem; }
+.cover small { color: var(--muted); }
+.continue { display: flex; align-items: center; justify-content: space-between; height: 48px; padding: 0 20px; border-radius: 999px; background: var(--paper); color: var(--ink); font-size: 14px; font-weight: 500; }
+.chapters { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.ch { display: flex; gap: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); }
+.ch img { width: 112px; height: 64px; object-fit: cover; border-radius: 8px; flex: none; }
+.ch .body { min-width: 0; flex: 1; }
+.ch .row { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.ch h2 { margin: 0; font-family: var(--display); font-weight: 500; font-size: 1.5rem; line-height: 1; }
+.ch .tag { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.ch p { margin: 6px 0 0; color: var(--muted); font-size: 14px; line-height: 1.35; }
+.bar { margin-top: 12px; height: 1px; background: var(--line); }
+.bar i { display: block; height: 1px; background: var(--paper); }
+.meta { display: block; margin-top: 8px; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.note { margin: 16px 4px 0; font-size: 12px; color: var(--faint); }
+.reader { position: fixed; inset: 0; background: var(--bg); }
+.stage { position: absolute; inset: 0; overflow: hidden; touch-action: none; user-select: none; }
+.stage img.page { position: absolute; top: 0; left: 0; width: 1280px; height: 720px; max-width: none; transform-origin: 0 0; }
+.scroll { height: 100%; overflow-y: auto; }
+.scroll ol { list-style: none; margin: 0 auto; padding: 72px 0 96px; max-width: 48rem; }
+.scroll li { border-bottom: 1px solid var(--line); }
+.scroll img { display: block; width: 100%; height: auto; }
+.scroll .end { max-width: 28rem; margin: 0 auto; padding: 40px 20px 24px; }
+.hair { position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--line); z-index: 10; pointer-events: none; }
+.hair i { display: block; height: 1px; background: var(--paper); }
+.chrome { position: absolute; left: 0; right: 0; z-index: 20; background: var(--bg); border-color: var(--line); transition: opacity 200ms ease; }
+.chrome.off { opacity: 0; pointer-events: none; }
+.head { top: 0; border-bottom: 1px solid var(--line); }
+.foot { bottom: 0; border-top: 1px solid var(--line); }
+.head-row, .foot-row { display: flex; align-items: center; gap: 4px; height: 56px; padding: 0 8px; }
+.head-row .grow { min-width: 0; flex: 1; padding: 0 4px; }
+.head-row strong { display: block; font-family: var(--display); font-weight: 500; font-size: 1.25rem; line-height: 1; }
+.head-row em { display: block; margin-top: 2px; font-style: normal; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tap { height: 44px; padding: 0 12px; border-radius: 999px; font-size: 14px; }
+.scrub { flex: 1; min-width: 0; accent-color: var(--paper); height: 44px; }
+.count { width: 48px; text-align: right; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.sheet { position: absolute; inset: 0; z-index: 30; display: flex; align-items: flex-end; justify-content: center; background: color-mix(in srgb, var(--bg) 80%, transparent); padding: 16px; }
+@media (min-width: 700px) { .sheet { align-items: center; } }
+.card { width: min(100%, 24rem); border: 1px solid var(--line); border-radius: 28px; background: var(--surface); padding: 24px; }
+.card h2 { margin: 8px 0 0; font-family: var(--display); font-weight: 500; font-size: 2.25rem; }
+.card p { color: var(--muted); font-size: 14px; line-height: 1.5; }
+.card .stack { display: flex; flex-direction: column; gap: 8px; margin-top: 24px; }
+.primary { height: 48px; border-radius: 999px; background: var(--paper); color: var(--ink); font-size: 14px; font-weight: 500; }
+.ghost { height: 44px; border-radius: 999px; border: 1px solid var(--line); font-size: 14px; }
+.quiet { height: 44px; color: var(--muted); font-size: 14px; }
+.coach { position: absolute; left: 0; right: 0; bottom: 0; z-index: 40; padding: 16px; }
+.coach .card ul { margin: 12px 0 0; padding-left: 18px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+.coach .card h2 { font-size: 1.5rem; }
+.fail { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
+@media (prefers-reduced-motion: reduce) { .can-glide { transition: none !important; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
 <script>
-const CH=[ // add a chapter: {t:"Chapter 3",n:12}
- {t:"Chapter 1",n:12},
- {t:"Chapter 2",n:11},
+const CHAPTERS = [
+  { id: 1, title: "Chapter 1", kicker: "Sixteen years", pages: 12,
+    blurb: "The true heir of the Takamori family vanished. Tonight, the dead patriarch would have his final say." },
+  { id: 2, title: "Chapter 2", kicker: "The rain", pages: 11,
+    blurb: "She comes to the door early. Inside the house, the days have already started to count down." }
 ];
-const src=(c,p)=>`img/ch${c+1}/p${String(p+1).padStart(2,'0')}.jpg`;
-let c=0,p=0,mode=localStorage.mode2||'scroll';
-const $=id=>document.getElementById(id);
-$('list').innerHTML=CH.map((x,i)=>`<a class="ch" href="#c${i+1}p1"><img src="${src(i,0)}" loading="lazy"><div><b>${x.t}</b><small>${x.n} pages</small></div></a>`).join('');
-$('chSel').innerHTML=CH.map((x,i)=>`<option value="${i}">${x.t}</option>`).join('');
-const saved=JSON.parse(localStorage.pos||'null');
-if(saved){$('resumeBtn').style.display='inline-block';$('resumeBtn').textContent=`Continue ${CH[saved.c].t}, page ${saved.p+1}`;$('resumeBtn').href=`#c${saved.c+1}p${saved.p+1}`;}
-function openCh(i,pg){c=i;p=pg;$('home').style.display='none';$('reader').style.display='flex';$('chSel').value=i;
- $('scroll').innerHTML=Array.from({length:CH[i].n},(_,k)=>`<img src="${src(i,k)}" loading="lazy" alt="Page ${k+1}">`).join('')+(i+1<CH.length?`<div style="text-align:center;margin:24px"><button onclick="openCh(${i+1},0)" style="background:#8a6a45;color:#fff;border:0;border-radius:4px;padding:12px 20px;font:inherit">Read ${CH[i+1].t} →</button></div>`:`<p style="text-align:center;color:#b9a07a">End of ${CH[i].t} · More chapters coming soon</p>`);
- applyMode();show();history.replaceState(null,'',`#c${i+1}p${pg+1}`);}
-function show(){$('end').style.display='none';$('pg').src=src(c,p);$('pageLbl').textContent=`Page ${p+1} / ${CH[c].n}`;
- $('prog').style.width=((p+1)/CH[c].n*100)+'%';localStorage.pos=JSON.stringify({c,p});history.replaceState(null,'',`#c${c+1}p${p+1}`);
- if(p+1<CH[c].n){new Image().src=src(c,p+1);}}
-function go(d){if($('end').style.display=='flex'){if(d<0){show();}return;}
- const np=p+d;if(np<0){if(c>0)openCh(c-1,CH[c-1].n-1);return;}
- if(np>=CH[c].n){$('end').style.display='flex';$('endTxt').textContent=`End of ${CH[c].t}`;
-  if(c+1<CH.length){$('nextBtn').style.display='';$('nextBtn').textContent=`Read ${CH[c+1].t} →`;$('nextBtn').onclick=()=>openCh(c+1,0);}
-  else{$('nextBtn').style.display='none';$('endTxt').textContent+=' · More chapters coming soon';}return;}
- p=np;show();}
-function home(){$('reader').style.display='none';$('home').style.display='block';history.replaceState(null,'',location.pathname);location.reload();}
-function applyMode(){const s=mode=='scroll';const R=$('reader');R.style.position=s?'static':'fixed';R.style.minHeight=s?'100vh':'';$('bar').style.position=s?'sticky':'';$('bar').style.top='0';$('bar').style.zIndex='5';document.body.style.overflow=s?'auto':'hidden';$('stage').style.display=s?'none':'flex';$('scroll').style.display=s?'block':'none';$('modeBtn').textContent=s?'Page by page':'Long scroll';
- if(s){const im=$('scroll').children[p];setTimeout(()=>{if(im&&p>0)im.scrollIntoView();else window.scrollTo(0,0);},80);}}
-function toggleMode(){mode=mode=='page'?'scroll':'page';localStorage.mode2=mode;applyMode();}
-function fs(){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}
-document.addEventListener('keydown',e=>{if($('reader').style.display!='flex'||mode=='scroll')return;
- if(['ArrowRight','d',' '].includes(e.key)){e.preventDefault();go(1);}if(['ArrowLeft','a'].includes(e.key))go(-1);if(e.key=='Escape')home();});
-let tx=null;$('stage').addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
-$('stage').addEventListener('touchend',e=>{if(tx==null)return;const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>50)go(dx<0?1:-1);tx=null;});
-window.addEventListener('scroll',()=>{if(mode!='scroll'||$('reader').style.display!='flex')return;const ims=[...$('scroll').querySelectorAll('img')];const k=ims.findIndex(im=>im.getBoundingClientRect().bottom>innerHeight/2);if(k>=0&&k!=p){p=k;$('pageLbl').textContent=`Page ${p+1} / ${CH[c].n}`;$('prog').style.width=((p+1)/CH[c].n*100)+'%';localStorage.pos=JSON.stringify({c,p});}});
-function route(){const m=location.hash.match(/c(\d+)p(\d+)/);if(m&&CH[m[1]-1]&&($('reader').style.display!='flex'||c!=m[1]-1))openCh(m[1]-1,Math.min(m[2]-1,CH[m[1]-1].n-1));}
-window.addEventListener('hashchange',route);route();
-</script></body></html>
+const IW = 1280, IH = 720, KEY = "migawari-reader-v1";
+const $ = (html) => { const t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstChild; };
+const chapter = (id) => CHAPTERS.find((c) => c.id === id);
+const src = (id, i) => `img/ch${id}/p${String(i + 1).padStart(2, "0")}.jpg`;
+const clamp = (n, count) => Math.min(count - 1, Math.max(0, n));
+function load() {
+  try { return Object.assign({ chapter: 1, page: 0, mode: "page", view: "read", coach: false, positions: {}, furthest: {} }, JSON.parse(localStorage.getItem(KEY) || "null") || {}); }
+  catch { return { chapter: 1, page: 0, mode: "page", view: "read", coach: false, positions: {}, furthest: {} }; }
+}
+function save(patch) {
+  const prev = load();
+  const next = Object.assign({}, prev, patch);
+  if (patch.chapter != null && patch.page != null) {
+    const key = String(patch.chapter);
+    next.positions = Object.assign({}, prev.positions, { [key]: patch.page });
+    next.furthest = Object.assign({}, prev.furthest, { [key]: Math.max(prev.furthest[key] || 0, patch.page) });
+  }
+  localStorage.setItem(KEY, JSON.stringify(next));
+  return next;
+}
+function fitScale(w, h) { return Math.min(w / IW, h / IH); }
+function place(view, w, h) {
+  const fit = fitScale(w, h);
+  const scale = view === "fit" ? fit : Math.max(fit, h / IH);
+  const pw = IW * scale, ph = IH * scale, overflow = pw - w;
+  return { fit, scale, tx: pw <= w ? (w - pw) / 2 : overflow < w * 0.18 ? (w - pw) / 2 : 0, ty: ph <= h ? (h - ph) / 2 : 0 };
+}
+function clampPan(tx, ty, scale, w, h) {
+  const pw = IW * scale, ph = IH * scale;
+  return {
+    tx: pw <= w ? (w - pw) / 2 : Math.min(0, Math.max(w - pw, tx)),
+    ty: ph <= h ? (h - ph) / 2 : Math.min(0, Math.max(h - ph, ty))
+  };
+}
+function clampScale(s, fit) { return Math.min(fit * 4, Math.max(fit, s)); }
+
+const root = document.getElementById("root");
+let state = { screen: "shelf" };
+
+function route() {
+  const m = location.hash.match(/^#\/(\d+)\/(\d+)/);
+  if (!m) { showShelf(); return; }
+  const ch = chapter(Number(m[1]));
+  if (!ch) { showShelf(); return; }
+  showReader(ch.id, clamp(Number(m[2]) - 1, ch.pages));
+}
+function goShelf() { history.pushState(null, "", location.pathname + location.search); showShelf(); }
+function goPage(id, index, replace) {
+  const ch = chapter(id);
+  const page = clamp(index, ch.pages);
+  const url = `#/${id}/${page + 1}`;
+  if (replace) history.replaceState(null, "", url); else history.pushState(null, "", url);
+  showReader(id, page);
+}
+
+function showShelf() {
+  state = { screen: "shelf" };
+  const store = load();
+  const saved = chapter(store.chapter);
+  const resume = saved && (store.page > 0 || store.chapter > 1);
+  root.replaceChildren($(`<main class="shelf safe-top"></main>`));
+  const main = root.firstChild;
+  main.append($(`<header>
+    <p class="kicker">The Takamori Heir</p>
+    <h1>Migawari</h1>
+    <p class="jp">身代わり</p>
+    <p class="lede">English edition. Two chapters of the house that lost its heir — drawn wide, meant to be read up close.</p>
+  </header>`));
+  const grid = $(`<div class="grid"></div>`);
+  const cover = $(`<a class="cover" href="#/1/1"><img alt="Opening page: the Takamori gates in the rain"><span><b>Begin at the gates</b><small>Chapter 1</small></span></a>`);
+  cover.querySelector("img").src = src(1, 0);
+  cover.addEventListener("click", (e) => { e.preventDefault(); goPage(1, 0); });
+  grid.append(cover);
+  const side = $(`<section></section>`);
+  if (resume) {
+    const btn = $(`<a class="continue" href="#/${saved.id}/${store.page + 1}"><span>Continue</span><span>${saved.title} · ${store.page + 1}</span></a>`);
+    btn.addEventListener("click", (e) => { e.preventDefault(); goPage(saved.id, store.page); });
+    side.append(btn);
+  }
+  const list = $(`<ol class="chapters"></ol>`);
+  for (const ch of CHAPTERS) {
+    const key = String(ch.id);
+    const far = store.furthest[key];
+    const opened = far != null;
+    const pct = opened ? Math.round(((far + 1) / ch.pages) * 100) : 0;
+    const start = opened ? (store.positions[key] ?? 0) : 0;
+    const item = $(`<li><a class="ch" href="#/${ch.id}/${start + 1}">
+      <img alt="">
+      <span class="body">
+        <span class="row"><h2>${ch.title}</h2><span class="tag">${ch.kicker}</span></span>
+        <p>${ch.blurb}</p>
+        <span class="bar"><i style="width:${pct}%"></i></span>
+        <span class="meta">${opened ? `${far + 1} of ${ch.pages} pages` : `${ch.pages} pages`}</span>
+      </span>
+    </a></li>`);
+    item.querySelector("img").src = src(ch.id, 0);
+    item.querySelector("a").addEventListener("click", (e) => { e.preventDefault(); goPage(ch.id, start); });
+    list.append(item);
+  }
+  side.append(list, $(`<p class="note">More chapters when they are ready.</p>`));
+  grid.append(side);
+  main.append(grid);
+}
+
+function showReader(id, page) {
+  const ch = chapter(id);
+  const store = load();
+  const fresh = state.screen !== "read" || state.id !== id;
+  state = {
+    screen: "read", id, page, ch,
+    mode: state.mode || store.mode || "page",
+    view: state.view || store.view || "read",
+    chrome: true, end: false, coach: fresh ? !store.coach && (store.mode || "page") === "page" : state.coach,
+    tx: 0, ty: 0, scale: 1, swipe: 0, glide: false, ready: false, failed: false, fit: 1
+  };
+  if (fresh) state.coach = !store.coach;
+  save({ chapter: id, page, mode: state.mode, view: state.view });
+  paintReader();
+  if (state.mode === "page") bindStage();
+  hideChromeLater();
+}
+
+let chromeTimer = 0;
+function hideChromeLater(stay) {
+  clearTimeout(chromeTimer);
+  state.chrome = true;
+  syncChrome();
+  if (stay || state.end || state.coach) return;
+  chromeTimer = setTimeout(() => { state.chrome = false; syncChrome(); }, 3200);
+}
+function syncChrome() {
+  document.querySelectorAll(".chrome").forEach((el) => el.classList.toggle("off", !(state.chrome || state.end)));
+  const live = document.getElementById("page-live");
+  if (live) live.textContent = `Page ${state.page + 1} of ${state.ch.pages}`;
+  const count = document.getElementById("count");
+  if (count) count.textContent = `${state.page + 1}/${state.ch.pages}`;
+  const hair = document.getElementById("hair");
+  if (hair) hair.style.width = `${((state.page + 1) / state.ch.pages) * 100}%`;
+  const scrub = document.getElementById("scrub");
+  if (scrub && Number(scrub.value) !== state.page + 1) scrub.value = String(state.page + 1);
+  const zoomBtn = document.getElementById("zoom-btn");
+  if (zoomBtn) zoomBtn.textContent = (state.scale > state.fit * 1.08 || state.view === "read") ? "Whole page" : "Closer";
+}
+
+function paintReader() {
+  const { ch, page, mode } = state;
+  const next = chapter(ch.id + 1);
+  root.replaceChildren($(`<div class="reader"></div>`));
+  const box = root.firstChild;
+  if (mode === "page") {
+    const stage = $(`<div class="stage" id="stage"></div>`);
+    const img = $(`<img class="page can-glide" id="page-img" draggable="false" width="1280" height="720" alt="Chapter ${ch.id}, page ${page + 1}">`);
+    img.src = src(ch.id, page);
+    img.addEventListener("error", () => { state.failed = true; paintFail(); });
+    img.addEventListener("load", () => { state.failed = false; });
+    stage.append(img);
+    stage.addEventListener("contextmenu", (e) => e.preventDefault());
+    box.append(stage);
+  } else {
+    const sc = $(`<div class="scroll" id="scroller"></div>`);
+    const ol = $(`<ol></ol>`);
+    for (let i = 0; i < ch.pages; i++) {
+      const li = $(`<li data-index="${i}"><img alt="Chapter ${ch.id}, page ${i + 1}" ${Math.abs(i - page) < 2 ? "" : 'loading="lazy"'}></li>`);
+      li.querySelector("img").src = src(ch.id, i);
+      ol.append(li);
+    }
+    sc.append(ol);
+    const end = $(`<div class="end"><p class="kicker">End of ${ch.title}</p></div>`);
+    if (next) {
+      const b = $(`<button class="primary" type="button">${next.title}</button>`);
+      b.addEventListener("click", () => goPage(next.id, 0));
+      end.append(b);
+    } else end.append($(`<p>More chapters when they are ready.</p>`));
+    const back = $(`<button class="quiet" type="button">Back to the shelf</button>`);
+    back.addEventListener("click", goShelf);
+    end.append(back);
+    sc.append(end);
+    sc.addEventListener("scroll", onScroll, { passive: true });
+    box.append(sc);
+  }
+  box.append($(`<div class="hair"><i id="hair"></i></div>`));
+  const head = $(`<header class="chrome head safe-top"><div class="head-row">
+    <button class="tap" id="shelf-btn" type="button">Shelf</button>
+    <div class="grow"><strong>${ch.title}</strong><em id="page-live"></em></div>
+    <button class="tap" id="mode-btn" type="button">${mode === "page" ? "Scroll" : "Pages"}</button>
+  </div></header>`);
+  head.querySelector("#shelf-btn").addEventListener("click", goShelf);
+  head.querySelector("#mode-btn").addEventListener("click", () => {
+    state.mode = state.mode === "page" ? "scroll" : "page";
+    save({ chapter: ch.id, page: state.page, mode: state.mode, view: state.view });
+    showReader(ch.id, state.page);
+    hideChromeLater(true);
+  });
+  const foot = $(`<footer class="chrome foot safe-bottom"><div class="foot-row">
+    ${mode === "page" ? `<button class="tap" id="zoom-btn" type="button">Whole page</button>` : `<span class="count" style="width:auto">Skim</span>`}
+    <input class="scrub" id="scrub" type="range" min="1" max="${ch.pages}" aria-label="Page">
+    <span class="count" id="count"></span>
+  </div></footer>`);
+  const scrub = foot.querySelector("#scrub");
+  scrub.value = String(page + 1);
+  scrub.addEventListener("input", () => jump(Number(scrub.value) - 1));
+  const zoom = foot.querySelector("#zoom-btn");
+  if (zoom) zoom.addEventListener("click", () => {
+    applyView(state.scale > state.fit * 1.08 || state.view === "read" ? "fit" : "read", true);
+    hideChromeLater();
+  });
+  box.append(head, foot);
+  if (state.end) box.append(endSheet(next));
+  if (state.coach && mode === "page" && !state.end) box.append(coachSheet());
+  syncChrome();
+  if (mode === "scroll") {
+    requestAnimationFrame(() => {
+      document.querySelector(`[data-index="${page}"]`)?.scrollIntoView();
+    });
+  } else {
+    requestAnimationFrame(() => applyView(state.view, false));
+    preload(ch.id, page);
+  }
+}
+
+function paintFail() {
+  const stage = document.getElementById("stage");
+  if (!stage || stage.querySelector(".fail")) return;
+  const fail = $(`<div class="fail"><p>This page did not load.</p></div>`);
+  const b = $(`<button class="ghost" type="button">Try again</button>`);
+  b.addEventListener("click", () => { const img = document.getElementById("page-img"); if (img) img.src = src(state.id, state.page) + "?r=" + Date.now(); fail.remove(); });
+  fail.append(b);
+  stage.append(fail);
+}
+
+function endSheet(next) {
+  const sheet = $(`<div class="sheet"><div class="card safe-bottom">
+    <p class="kicker">End of chapter</p>
+    <h2>${state.ch.title}</h2>
+    <p>${next ? `Next is ${next.title}. ${next.blurb}` : "More chapters when they are ready."}</p>
+    <div class="stack"></div>
+  </div></div>`);
+  const stack = sheet.querySelector(".stack");
+  if (next) {
+    const b = $(`<button class="primary" type="button">Read ${next.title}</button>`);
+    b.addEventListener("click", () => goPage(next.id, 0));
+    stack.append(b);
+  }
+  const stay = $(`<button class="ghost" type="button">Stay on this page</button>`);
+  stay.addEventListener("click", () => { state.end = false; sheet.remove(); hideChromeLater(); });
+  const shelf = $(`<button class="quiet" type="button">Shelf</button>`);
+  shelf.addEventListener("click", goShelf);
+  stack.append(stay, shelf);
+  return sheet;
+}
+function coachSheet() {
+  const wrap = $(`<div class="coach safe-bottom"><div class="card">
+    <p class="kicker">Migawari</p>
+    <h2>How to read on a phone</h2>
+    <ul>
+      <li>Drag to move across the page. The type is drawn wide, so start in close.</li>
+      <li>Tap the left or right edge to turn. A fast flick at the edge does the same.</li>
+      <li>Double-tap a panel to zoom. Whole page shows the full spread.</li>
+      <li>Turn the phone sideways and the page fills the screen.</li>
+    </ul>
+  </div></div>`);
+  const b = $(`<button class="primary" type="button" style="width:100%;margin-top:20px">Start reading</button>`);
+  b.addEventListener("click", () => {
+    state.coach = false;
+    save({ coach: true, chapter: state.id, page: state.page, mode: state.mode, view: state.view });
+    wrap.remove();
+    hideChromeLater();
+  });
+  wrap.querySelector(".card").append(b);
+  return wrap;
+}
+
+function jump(index) {
+  state.end = false;
+  if (state.mode === "scroll") document.querySelector(`[data-index="${index}"]`)?.scrollIntoView();
+  goPage(state.id, index, true);
+}
+let scrollLock = false;
+function onScroll() {
+  if (scrollLock || state.mode !== "scroll") return;
+  const rootEl = document.getElementById("scroller");
+  if (!rootEl) return;
+  const edge = rootEl.getBoundingClientRect().top + 72;
+  let best = 0;
+  rootEl.querySelectorAll("[data-index]").forEach((el) => {
+    if (el.getBoundingClientRect().top - edge <= 8) best = Number(el.dataset.index);
+  });
+  if (best !== state.page) {
+    state.page = best;
+    save({ chapter: state.id, page: best, mode: state.mode, view: state.view });
+    history.replaceState(null, "", `#/${state.id}/${best + 1}`);
+    syncChrome();
+  }
+}
+function preload(id, page) {
+  [page - 1, page + 1].forEach((i) => { if (i >= 0 && i < state.ch.pages) { const im = new Image(); im.src = src(id, i); } });
+}
+function applyView(view, animate) {
+  const stage = document.getElementById("stage");
+  if (!stage) return;
+  const r = stage.getBoundingClientRect();
+  if (r.width <= 0) return;
+  state.view = view;
+  const p = place(view, r.width, r.height);
+  state.fit = p.fit; state.scale = p.scale; state.tx = p.tx; state.ty = p.ty; state.swipe = 0; state.glide = animate; state.ready = true;
+  draw();
+  save({ chapter: state.id, page: state.page, mode: state.mode, view });
+}
+function draw() {
+  const img = document.getElementById("page-img");
+  if (!img) return;
+  img.style.transition = state.glide ? "transform 220ms cubic-bezier(0.22, 1, 0.36, 1)" : "none";
+  img.style.transform = `translate3d(${state.tx + state.swipe}px, ${state.ty}px, 0) scale(${state.scale})`;
+  img.style.opacity = state.ready && !state.failed ? "1" : "0";
+  const zoomBtn = document.getElementById("zoom-btn");
+  if (zoomBtn) zoomBtn.textContent = (state.scale > state.fit * 1.08 || state.view === "read") ? "Whole page" : "Closer";
+}
+function turn(delta) {
+  const next = state.page + delta;
+  if (next < 0) {
+    const prev = chapter(state.id - 1);
+    if (prev) goPage(prev.id, prev.pages - 1);
+    return;
+  }
+  if (next >= state.ch.pages) { state.end = true; state.chrome = true; paintReader(); return; }
+  state.end = false;
+  goPage(state.id, next, true);
+}
+
+let gestureBound = false;
+function bindStage() {
+  const stage = document.getElementById("stage");
+  if (!stage || gestureBound && stage.dataset.bound) return;
+  stage.dataset.bound = "1";
+  const pointers = new Map();
+  let gesture = "none", startX = 0, startY = 0, startAt = 0, originTx = 0, originTy = 0, moved = false, lastTap = 0, tapTimer = 0, pinch = null;
+  const local = (e) => { const r = stage.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top, w: r.width, h: r.height }; };
+  stage.addEventListener("pointerdown", (e) => {
+    if (e.button !== 0 && e.pointerType === "mouse") return;
+    stage.setPointerCapture(e.pointerId);
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    state.glide = false;
+    if (pointers.size >= 2) {
+      gesture = "pinch";
+      const pts = [...pointers.values()];
+      const r = stage.getBoundingClientRect();
+      const cx = (pts[0].x + pts[1].x) / 2 - r.left;
+      const cy = (pts[0].y + pts[1].y) / 2 - r.top;
+      pinch = { dist: Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) || 1, scale: state.scale, ix: (cx - state.tx) / state.scale, iy: (cy - state.ty) / state.scale };
+      clearTimeout(tapTimer);
+      return;
+    }
+    gesture = "none"; moved = false; startX = e.clientX; startY = e.clientY; startAt = performance.now(); originTx = state.tx; originTy = state.ty;
+  });
+  stage.addEventListener("pointermove", (e) => {
+    if (!pointers.has(e.pointerId)) return;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (gesture === "pinch" && pinch && pointers.size >= 2) {
+      const pts = [...pointers.values()];
+      const r = stage.getBoundingClientRect();
+      const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) || 1;
+      const cx = (pts[0].x + pts[1].x) / 2 - r.left;
+      const cy = (pts[0].y + pts[1].y) / 2 - r.top;
+      const nextScale = clampScale(pinch.scale * (dist / pinch.dist), state.fit);
+      const next = clampPan(cx - pinch.ix * nextScale, cy - pinch.iy * nextScale, nextScale, r.width, r.height);
+      state.scale = nextScale; state.tx = next.tx; state.ty = next.ty; draw();
+      return;
+    }
+    if (pointers.size !== 1 || gesture === "pinch") return;
+    const dx = e.clientX - startX, dy = e.clientY - startY;
+    if (!moved && Math.hypot(dx, dy) < 8) return;
+    moved = true;
+    const r = stage.getBoundingClientRect();
+    if (state.scale <= state.fit * 1.05 && Math.abs(dx) > Math.abs(dy)) { gesture = "swipe"; state.swipe = dx; draw(); return; }
+    if (state.scale > state.fit * 1.05) {
+      gesture = "pan";
+      const next = clampPan(originTx + dx, originTy + dy, state.scale, r.width, r.height);
+      state.tx = next.tx; state.ty = next.ty; draw();
+    }
+  });
+  const up = (e) => {
+    pointers.delete(e.pointerId);
+    if (gesture === "pinch") { if (pointers.size === 0) gesture = "none"; return; }
+    if (pointers.size > 0) return;
+    const dx = e.clientX - startX, dy = e.clientY - startY, dt = Math.max(1, performance.now() - startAt);
+    if (gesture === "swipe") {
+      if (Math.abs(dx) > 56) { state.swipe = 0; turn(dx < 0 ? 1 : -1); }
+      else { state.glide = true; state.swipe = 0; draw(); }
+      gesture = "none"; return;
+    }
+    if (gesture === "pan") {
+      const r = stage.getBoundingClientRect();
+      const width = IW * state.scale;
+      const atLeft = state.tx >= -6, atRight = width <= r.width || state.tx <= r.width - width + 6;
+      const speed = Math.abs(dx) / dt;
+      if (Math.abs(dx) > 72 && Math.abs(dx) > Math.abs(dy) * 1.3 && speed > 0.55 && ((dx > 0 && atLeft) || (dx < 0 && atRight))) turn(dx < 0 ? 1 : -1);
+      gesture = "none"; return;
+    }
+    if (moved) { gesture = "none"; return; }
+    const now = performance.now();
+    const p = local(e);
+    if (now - lastTap < 280) {
+      lastTap = 0; clearTimeout(tapTimer);
+      if (state.scale > state.fit * 1.08) applyView("fit", true);
+      else {
+        const target = clampScale(Math.max(place("read", p.w, p.h).scale, state.fit * 2.2), state.fit);
+        const ix = (p.x - state.tx) / state.scale, iy = (p.y - state.ty) / state.scale;
+        const next = clampPan(p.x - ix * target, p.y - iy * target, target, p.w, p.h);
+        state.view = "read"; state.glide = true; state.scale = target; state.tx = next.tx; state.ty = next.ty; draw();
+      }
+    } else {
+      lastTap = now;
+      tapTimer = setTimeout(() => {
+        const ratio = p.x / p.w;
+        if (ratio < 0.22) turn(-1);
+        else if (ratio > 0.78) turn(1);
+        else { state.chrome = !state.chrome; if (state.chrome) hideChromeLater(); else syncChrome(); }
+      }, 230);
+    }
+    gesture = "none";
+  };
+  stage.addEventListener("pointerup", up);
+  stage.addEventListener("pointercancel", up);
+  new ResizeObserver(() => { if (state.mode === "page" && !state.end) applyView(state.view, false); }).observe(stage);
+}
+window.addEventListener("keydown", (e) => {
+  if (state.screen !== "read") return;
+  if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;
+  if (e.key === "ArrowRight" || e.key === " ") { e.preventDefault(); turn(1); }
+  else if (e.key === "ArrowLeft") { e.preventDefault(); turn(-1); }
+  else if (e.key === "Escape") goShelf();
+});
+window.addEventListener("hashchange", route);
+window.addEventListener("popstate", route);
+route();
+</script>
+</body>
+</html>
