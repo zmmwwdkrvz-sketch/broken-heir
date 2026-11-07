@@ -103,7 +103,9 @@ const CHAPTERS = [
   { id: 1, title: "Chapter 1", kicker: "Sixteen years", pages: 12,
     blurb: "The true heir of the Takamori family vanished. Tonight, the dead patriarch would have his final say." },
   { id: 2, title: "Chapter 2", kicker: "The rain", pages: 11,
-    blurb: "She comes to the door early. Inside the house, the days have already started to count down." }
+    blurb: "She comes to the door early. Inside the house, the days have already started to count down." },
+  { id: 3, title: "Chapter 3", kicker: "Day six", pages: 12,
+    blurb: "East of the Sumida, the river runs higher than the streets." }
 ];
 const IW = 1280, IH = 720, KEY = "migawari-reader-v1";
 const $ = (html) => { const t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstChild; };
@@ -171,7 +173,7 @@ function showShelf() {
     <p class="kicker">The Takamori Heir</p>
     <h1>Migawari</h1>
     <p class="jp">身代わり</p>
-    <p class="lede">English edition. Two chapters of the house that lost its heir — drawn wide, meant to be read up close.</p>
+    <p class="lede">English edition. Three chapters of the house that lost its heir — drawn wide, meant to be read up close.</p>
   </header>`));
   const grid = $(`<div class="grid"></div>`);
   const cover = $(`<a class="cover" href="#/1/1"><img alt="Opening page: the Takamori gates in the rain"><span><b>Begin at the gates</b><small>Chapter 1</small></span></a>`);
